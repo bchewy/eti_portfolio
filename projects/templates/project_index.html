@@ -1,17 +1,32 @@
 {% extends "base.html" %}
 {% load static %}
 {% block page_content %}
+
+<div class="container text-center mx-5">
+    <img class="mt-1 img-fluid rounded-circle" src="https://bchewy.me/index.png" alt="Brian Chew's Profile Picture">
+    <h2>Self Introduction:</h2>
+    <div class="container w-50">
+        <p class="text-center text1">A Cloud Computing Enthusiast &amp;
+            Aspiring Software Engineer - based in the <span class="text-danger">little red dot!</span></p>
+    </div>
+    <h3 class="text-center">My Resume:</h3>
+    <div class="container mt-2 w-50">
+        <a class="text-center" href="https://bchewy.me">Download here</a>
+    </div>
+    <hr>
+</div>
+
+
 <h1>Projects</h1>
 <div class="row">
-{% for project in projects %}
+    {% for project in projects %}
     <div class="col-md-4">
         <div class="card mb-2">
             <img class="card-img-top" src="{% static project.image %}">
             <div class="card-body">
                 <h5 class="card-title">{{ project.title }}</h5>
                 <p class="card-text">{{ project.description }}</p>
-                <a href="{% url 'project_detail' project.pk %}"
-                   class="btn btn-primary">
+                <a href="{% url 'project_detail' project.pk %}" class="btn btn-primary">
                     Read More
                 </a>
             </div>
