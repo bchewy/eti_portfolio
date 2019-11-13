@@ -1,5 +1,5 @@
 [run]
-omit = */manage.py, */wsgi.py, */urls.py, */views.py, */forms.py
+omit = */manage.py, */wsgi.py
 branch = true
 source = .
 

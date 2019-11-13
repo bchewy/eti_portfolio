@@ -1,18 +1,103 @@
-from selenium.common.exceptions import NoSuchElementException
 import os
+import time
+import datetime
+
+from projects.apps import ProjectsConfig
+from blog.apps import BlogConfig
+from blog.models import Category, Post, Comment
+from projects.models import Project
+
+from django.urls import reverse
+from django.test import Client
+
+import pytest
+
+from selenium.common.exceptions import NoSuchElementException
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.support.ui import Select
-from projects.apps import ProjectsConfig
-from blog.apps import BlogConfig
-# from django.core.urlresolvers import resolve, reverse
 
-import time
 
 driver = webdriver.Safari()
+fake_client = Client()
+
+
+@pytest.mark.django_db
+def test_list_blog_posts():
+    response = fake_client.get(reverse('blog_index'))
+    assert response.status_code == 200
+
+
+@pytest.mark.django_db
+def test_list_projects():
+    response = fake_client.get(reverse('project_index'))
+    assert response.status_code == 200
+
+
+@pytest.mark.django_db
+def test_list_blog_category():
+    response = fake_client.get(
+        reverse('blog_category', kwargs={'category': 'Sample'}),)
+    assert response.status_code == 200
+
+
+@pytest.mark.django_db
+def test_show_blog_details():
+    # Creating the models
+    post = create_post()
+    cat = create_cat()
+    comment = create_comment()
+
+    # Adding associations
+    post.categories.add(cat)
+    comment.post = post
+    post.save()  # Save again after association
+
+    # Making the request
+    response = fake_client.get(
+        reverse('blog_detail', kwargs={'pk': post.id}))
+    assert response.status_code == 200
+
+
+@pytest.mark.django_db
+def test_show_projectdetails():
+    # Creating the models
+    project = create_project()
+
+    # Making the request
+    response = fake_client.get(
+        reverse('project_detail', kwargs={'pk': project.id}))
+    assert response.status_code == 200
+
+
+@pytest.mark.django_db
+def test_create_comments_valid():
+    post = create_post()
+    comment = create_comment()
+    comment.post = post
+    post.comments = comment
+    post.save()
+
+    response = fake_client.post(reverse('blog_detail', kwargs={'pk': post.id, }), {
+                                'author': comment.author, 'body': comment.body, 'post': comment.post})
+    assert response.status_code == 200
+
+
+@pytest.mark.django_db
+def test_create_comments_invalid():
+    post = create_post()
+    # Able to create invalid comment - but it is justified since checks are on frontend
+    comment = create_comment_invalid()
+    comment.post = post
+    post.comments = comment
+    post.save()
+
+    response = fake_client.post(reverse('blog_detail', kwargs={'pk': post.id, }), {
+                                'author': comment.author, 'body': comment.body, 'post': comment.post})
+    assert response.status_code == 200
 
 
 def test_project_apps_dot_py():
@@ -29,6 +114,7 @@ def test_initial_admin_visit():
 
 
 def test_login_valid():
+    reset_driver()  # Resets the client before trying to log in with a valid one
     driver.get('http://127.0.0.1:8000/admin')
     username_e = driver.find_element_by_name("username")
     password_e = driver.find_element_by_name("password")
@@ -302,18 +388,8 @@ def test_login_invalid():
     assert check_exists_by_xpath('/html/body/div/div[2]/p') == True
 
 
-# def test_initial_project_visit():
-#     driver.get('http://127.0.0.1:8000/projects')
-#     time.sleep(1)
-#     assert "Project Index" in driver.title
-
-
-# def test_check_resume():
-#     reset_driver()
-#     driver.get('http://127.0.0.1:8000/projects')
-#     time.sleep(1)
-#     resume = driver.find_element_by_name("myresume")
-#     assert "My Resume" in resume.text
+def test_cannot_find_element():
+    assert check_exists_by_xpath('') == False
 
 
 # Common Functions
@@ -329,3 +405,42 @@ def check_exists_by_xpath(xpath):
     except NoSuchElementException:
         return False
     return True
+
+
+def create_project():
+    project = Project(title='Project Coolio',
+                      description='A super cool project',
+                      technology='RoR',
+                      image='project1.png'
+                      )
+    project.save()
+    return project
+
+
+def create_post():
+    post = Post(title='title',
+                body='sample body',
+                created_on=datetime.datetime.now(),
+                last_modified=datetime.datetime.now())
+    post.save()
+    return post
+
+
+def create_cat():
+    cat = Category(name='Category')
+    cat.save()
+    return cat
+
+
+def create_comment():
+    comment = Comment(author='Person',
+                      body='This post rocks!',
+                      created_on=datetime.datetime.now())
+    return comment
+
+
+def create_comment_invalid():
+    comment = Comment(author='',
+                      body='',
+                      created_on=datetime.datetime.now())
+    return comment
