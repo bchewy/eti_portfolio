@@ -22,17 +22,12 @@ def test_project_apps_dot_py():
 def test_project_blogs_dot_py():
     assert BlogConfig.name == 'blog'
 
-# def test_project_urls_dot_py():
-#     url = reverse('api_user_list', args=[])
-#     noz.assert_equal(url, '/api/user/')
-
 
 def test_initial_admin_visit():
     driver.get('http://127.0.0.1:8000/admin')
     assert "Log in | Django site admin" in driver.title
 
 
-# Checks for the initial visit to the /admin route and logs on.
 def test_login_valid():
     driver.get('http://127.0.0.1:8000/admin')
     username_e = driver.find_element_by_name("username")
