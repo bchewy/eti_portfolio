@@ -6,13 +6,28 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.support.ui import Select
+from projects.apps import ProjectsConfig
+from blog.apps import BlogConfig
+# from django.core.urlresolvers import resolve, reverse
+
 import time
 
 driver = webdriver.Safari()
 
 
-# Checks if the initial visit to the /admin route works
-def test_initial_visit():
+def test_project_apps_dot_py():
+    assert ProjectsConfig.name == 'projects'
+
+
+def test_project_blogs_dot_py():
+    assert BlogConfig.name == 'blog'
+
+# def test_project_urls_dot_py():
+#     url = reverse('api_user_list', args=[])
+#     noz.assert_equal(url, '/api/user/')
+
+
+def test_initial_admin_visit():
     driver.get('http://127.0.0.1:8000/admin')
     assert "Log in | Django site admin" in driver.title
 
@@ -45,7 +60,7 @@ def test_create_category_invalid():
         '//*[@id="category_form"]/div/p') == True and "Please correct the error below." in driver.page_source)
 
 
-def test_create_category_valid():
+def test_create_category_valid(live_server):
     driver.get('http://127.0.0.1:8000/admin')
     add_link = driver.find_element_by_xpath(
         '//*[@id="content-main"]/div[2]/table/tbody/tr[1]/td[1]/a')
@@ -290,6 +305,21 @@ def test_login_invalid():
     time.sleep(1)
     # Check for error note element
     assert check_exists_by_xpath('/html/body/div/div[2]/p') == True
+
+
+# def test_initial_project_visit():
+#     driver.get('http://127.0.0.1:8000/projects')
+#     time.sleep(1)
+#     assert "Project Index" in driver.title
+
+
+# def test_check_resume():
+#     reset_driver()
+#     driver.get('http://127.0.0.1:8000/projects')
+#     time.sleep(1)
+#     resume = driver.find_element_by_name("myresume")
+#     assert "My Resume" in resume.text
+
 
 # Common Functions
 

@@ -1,0 +1,7 @@
+[run]
+omit = */manage.py, */wsgi.py, */urls.py, */views.py, */forms.py
+branch = true
+source = .
+
+[report]
+show_missing = false
