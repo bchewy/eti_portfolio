@@ -1,11 +1,8 @@
 import os
 import time
 import datetime
-
-from projects.apps import ProjectsConfig
-from blog.apps import BlogConfig
-from blog.models import Category, Post, Comment
-from projects.models import Project
+import django
+django.setup()
 
 from django.urls import reverse
 from django.test import Client
@@ -19,6 +16,11 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.support.ui import Select
+
+from projects.apps import ProjectsConfig
+from blog.apps import BlogConfig
+from blog.models import Category, Post, Comment
+from projects.models import Project
 
 
 driver = webdriver.Safari()
@@ -141,7 +143,7 @@ def test_create_category_invalid():
         '//*[@id="category_form"]/div/p') == True and "Please correct the error below." in driver.page_source)
 
 
-def test_create_category_valid(live_server):
+def test_create_category_valid():
     driver.get('http://127.0.0.1:8000/admin')
     add_link = driver.find_element_by_xpath(
         '//*[@id="content-main"]/div[2]/table/tbody/tr[1]/td[1]/a')
