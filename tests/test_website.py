@@ -95,7 +95,7 @@ def test_create_comments_valid():
                                 'author': comment.author, 'body': comment.body, 'post': comment.post})
     assert response.status_code == 200
 
-
+# Frontend checks
 @pytest.mark.django_db
 def test_create_comments_invalid():
     post = create_post()
