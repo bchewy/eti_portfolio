@@ -1,5 +1,5 @@
 [run]
-omit = */manage.py, */wsgi.py
+omit = */manage.py, */wsgi.py, ../*/migrations/*
 branch = true
 source = .
 

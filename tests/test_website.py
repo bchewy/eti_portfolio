@@ -1,26 +1,22 @@
+from projects.models import Project
+from blog.models import Category, Post, Comment
+from blog.apps import BlogConfig
+from projects.apps import ProjectsConfig
+from selenium.webdriver.support.ui import Select
+from selenium.webdriver.support import expected_conditions as ec
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
+from selenium import webdriver
+from selenium.common.exceptions import NoSuchElementException
+import pytest
+from django.test import Client
+from django.urls import reverse
 import os
 import time
 import datetime
 import django
 django.setup()
-
-from django.urls import reverse
-from django.test import Client
-
-import pytest
-
-from selenium.common.exceptions import NoSuchElementException
-from selenium import webdriver
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as ec
-from selenium.webdriver.support.ui import Select
-
-from projects.apps import ProjectsConfig
-from blog.apps import BlogConfig
-from blog.models import Category, Post, Comment
-from projects.models import Project
 
 
 driver = webdriver.Safari()
@@ -48,17 +44,12 @@ def test_list_blog_category():
 
 @pytest.mark.django_db
 def test_show_blog_details():
-    # Creating the models
     post = create_post()
     cat = create_cat()
     comment = create_comment()
-
-    # Adding associations
     post.categories.add(cat)
     comment.post = post
-    post.save()  # Save again after association
-
-    # Making the request
+    post.save()
     response = fake_client.get(
         reverse('blog_detail', kwargs={'pk': post.id}))
     assert response.status_code == 200
@@ -66,10 +57,7 @@ def test_show_blog_details():
 
 @pytest.mark.django_db
 def test_show_projectdetails():
-    # Creating the models
     project = create_project()
-
-    # Making the request
     response = fake_client.get(
         reverse('project_detail', kwargs={'pk': project.id}))
     assert response.status_code == 200
@@ -82,7 +70,6 @@ def test_create_comments_valid():
     comment.post = post
     post.comments = comment
     post.save()
-
     response = fake_client.post(reverse('blog_detail', kwargs={'pk': post.id, }), {
                                 'author': comment.author, 'body': comment.body, 'post': comment.post})
     assert response.status_code == 200
@@ -91,12 +78,10 @@ def test_create_comments_valid():
 @pytest.mark.django_db
 def test_create_comments_invalid():
     post = create_post()
-    # Able to create invalid comment - but it is justified since checks are on frontend
     comment = create_comment_invalid()
     comment.post = post
     post.comments = comment
     post.save()
-
     response = fake_client.post(reverse('blog_detail', kwargs={'pk': post.id, }), {
                                 'author': comment.author, 'body': comment.body, 'post': comment.post})
     assert response.status_code == 200
@@ -116,7 +101,7 @@ def test_initial_admin_visit():
 
 
 def test_login_valid():
-    reset_driver()  # Resets the client before trying to log in with a valid one
+    reset_driver() 
     driver.get('http://127.0.0.1:8000/admin')
     username_e = driver.find_element_by_name("username")
     password_e = driver.find_element_by_name("password")
@@ -149,7 +134,6 @@ def test_create_category_valid():
         '//*[@id="content-main"]/div[2]/table/tbody/tr[1]/td[1]/a')
     add_link.send_keys(Keys.RETURN)
     time.sleep(1)
-    # Fill in the category field
     field = driver.find_element_by_name('name')
     field.clear()
     field.send_keys("test1")
@@ -258,8 +242,6 @@ def test_create_post_valid():
         '//*[@id="content-main"]/div[2]/table/tbody/tr[2]/td[1]/a')
     add_link.send_keys(Keys.RETURN)
     time.sleep(1)
-
-    # Fill in the fields
     title = driver.find_element_by_name('title')
     title.clear()
     title.send_keys("sample title")
@@ -267,8 +249,7 @@ def test_create_post_valid():
     body.clear()
     body.send_keys("this is some body")
     select = Select(driver.find_element_by_xpath('//*[@id="id_categories"]'))
-    select.select_by_index(1)  # Select the first category to be linked
-
+    select.select_by_index(1)
     save_button = driver.find_element_by_xpath(
         '//*[@id="post_form"]/div/div/input[1]')
     save_button.send_keys(Keys.RETURN)
@@ -308,8 +289,7 @@ def test_update_created_post_valid():
     body.clear()
     body.send_keys("this is some new body")
     select = Select(driver.find_element_by_xpath('//*[@id="id_categories"]'))
-    select.select_by_index(0)  # Select the first category to be linked
-
+    select.select_by_index(0)
     save_button = driver.find_element_by_xpath(
         '//*[@id="post_form"]/div/div/input[1]')
     save_button.send_keys(Keys.RETURN)
@@ -328,14 +308,12 @@ def test_update_created_post_invalid():
         '//*[@id="result_list"]/tbody/tr[1]/th/a')
     first_object.send_keys(Keys.RETURN)
     time.sleep(1)
-
     title = driver.find_element_by_name('title')
     title.clear()
     title.send_keys("")
     body = driver.find_element_by_name('body')
     body.clear()
     body.send_keys("")
-
     save_button = driver.find_element_by_xpath(
         '//*[@id="post_form"]/div/div/input[1]')
     save_button.send_keys(Keys.RETURN)
@@ -386,7 +364,6 @@ def test_login_invalid():
     password_e.send_keys("wrongpassword")
     username_e.send_keys(Keys.RETURN)
     time.sleep(1)
-    # Check for error note element
     assert check_exists_by_xpath('/html/body/div/div[2]/p') == True
 
 
@@ -395,8 +372,6 @@ def test_cannot_find_element():
 
 
 # Common Functions
-
-
 def reset_driver():
     driver.delete_all_cookies()
 
