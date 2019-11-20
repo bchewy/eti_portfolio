@@ -1,7 +1,4 @@
-from projects.models import Project
-from blog.models import Category, Post, Comment
-from blog.apps import BlogConfig
-from projects.apps import ProjectsConfig
+
 from selenium.webdriver.support.ui import Select
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.support.ui import WebDriverWait
@@ -17,6 +14,10 @@ import time
 import datetime
 import django
 django.setup()
+from projects.models import Project
+from blog.models import Category, Post, Comment
+from blog.apps import BlogConfig
+from projects.apps import ProjectsConfig
 
 
 driver = webdriver.Safari()
