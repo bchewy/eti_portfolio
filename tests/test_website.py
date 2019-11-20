@@ -1,4 +1,5 @@
-
+import django
+django.setup()
 from selenium.webdriver.support.ui import Select
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.support.ui import WebDriverWait
@@ -9,16 +10,14 @@ from selenium.common.exceptions import NoSuchElementException
 import pytest
 from django.test import Client
 from django.urls import reverse
+from django.core.exceptions import ObjectDoesNotExist
 import os
 import time
 import datetime
-import django
-django.setup()
-from projects.models import Project
-from blog.models import Category, Post, Comment
-from blog.apps import BlogConfig
 from projects.apps import ProjectsConfig
-
+from blog.apps import BlogConfig
+from blog.models import Category, Post, Comment
+from projects.models import Project
 
 driver = webdriver.Safari()
 fake_client = Client()
@@ -37,14 +36,21 @@ def test_list_projects():
 
 
 @pytest.mark.django_db
-def test_list_blog_category():
+def test_list_blog_category_valid():
     response = fake_client.get(
         reverse('blog_category', kwargs={'category': 'Sample'}),)
     assert response.status_code == 200
 
+# Shows a new page if it exists too
+@pytest.mark.django_db
+def test_list_blog_category_invalid():
+    response = fake_client.get(
+        reverse('blog_category', kwargs={'category': 'Acategorythatdoesnotexist'}),)
+    assert response.status_code == 200
+
 
 @pytest.mark.django_db
-def test_show_blog_details():
+def test_show_blog_details_valid():
     post = create_post()
     cat = create_cat()
     comment = create_comment()
@@ -57,11 +63,25 @@ def test_show_blog_details():
 
 
 @pytest.mark.django_db
-def test_show_projectdetails():
+def test_show_blog_details_invalid():
+    with pytest.raises(ObjectDoesNotExist):
+        fake_client.get(
+            reverse('blog_detail', kwargs={'pk': 500}))
+
+
+@pytest.mark.django_db
+def test_show_projectdetails_valid():
     project = create_project()
     response = fake_client.get(
         reverse('project_detail', kwargs={'pk': project.id}))
     assert response.status_code == 200
+
+
+@pytest.mark.django_db
+def test_show_projectdetails_invalid():
+    with pytest.raises(ObjectDoesNotExist):
+        fake_client.get(
+            reverse('project_detail', kwargs={'pk': 500}))
 
 
 @pytest.mark.django_db
@@ -102,7 +122,7 @@ def test_initial_admin_visit():
 
 
 def test_login_valid():
-    reset_driver() 
+    reset_driver()
     driver.get('http://127.0.0.1:8000/admin')
     username_e = driver.find_element_by_name("username")
     password_e = driver.find_element_by_name("password")
