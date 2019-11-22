@@ -19,6 +19,10 @@ from blog.apps import BlogConfig
 from blog.models import Category, Post, Comment
 from projects.models import Project
 
+# Set up envrionment variables in case it cannot be found!
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "personal_portfolio.settings")
+
+# Load the webdriver for safari and the client for django.tests.
 driver = webdriver.Safari()
 fake_client = Client()
 
