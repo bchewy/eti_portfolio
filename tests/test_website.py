@@ -22,33 +22,33 @@ from projects.models import Project
 driver = webdriver.Safari()
 fake_client = Client()
 
-
+# DJANGO Blog index route test
 @pytest.mark.django_db
 def test_list_blog_posts():
     response = fake_client.get(reverse('blog_index'))
     assert response.status_code == 200
 
-
+# DJANGO Project index route test
 @pytest.mark.django_db
 def test_list_projects():
     response = fake_client.get(reverse('project_index'))
     assert response.status_code == 200
 
-
+# DJANGO Blog Category routes test valid
 @pytest.mark.django_db
 def test_list_blog_category_valid():
     response = fake_client.get(
         reverse('blog_category', kwargs={'category': 'Sample'}),)
     assert response.status_code == 200
 
-# Shows a new page if it exists too
+# DJANGO Blog Category routes test - invalid (opens a new page as the application's functionality is as such)
 @pytest.mark.django_db
 def test_list_blog_category_invalid():
     response = fake_client.get(
         reverse('blog_category', kwargs={'category': 'Acategorythatdoesnotexist'}),)
     assert response.status_code == 200
 
-
+# DJANGO Blog Details routes test - valid
 @pytest.mark.django_db
 def test_show_blog_details_valid():
     post = create_post()
@@ -61,14 +61,14 @@ def test_show_blog_details_valid():
         reverse('blog_detail', kwargs={'pk': post.id}))
     assert response.status_code == 200
 
-
+# DJANGO Blog Details routes test - invalid
 @pytest.mark.django_db
 def test_show_blog_details_invalid():
     with pytest.raises(ObjectDoesNotExist):
         fake_client.get(
             reverse('blog_detail', kwargs={'pk': 500}))
 
-
+# DJANGO Projects Details routes test - valid
 @pytest.mark.django_db
 def test_show_projectdetails_valid():
     project = create_project()
@@ -76,7 +76,7 @@ def test_show_projectdetails_valid():
         reverse('project_detail', kwargs={'pk': project.id}))
     assert response.status_code == 200
 
-
+# DJANGO Projects 
 @pytest.mark.django_db
 def test_show_projectdetails_invalid():
     with pytest.raises(ObjectDoesNotExist):
@@ -84,6 +84,7 @@ def test_show_projectdetails_invalid():
             reverse('project_detail', kwargs={'pk': 500}))
 
 
+# DJANGO Comments - creating comments valid
 @pytest.mark.django_db
 def test_create_comments_valid():
     post = create_post()
@@ -95,7 +96,8 @@ def test_create_comments_valid():
                                 'author': comment.author, 'body': comment.body, 'post': comment.post})
     assert response.status_code == 200
 
-# Frontend checks
+# DJANGO Comments - creating comments invalid - but still passes as empty comments go through 
+# Frontend checks (to prevent the comments from being empty)
 @pytest.mark.django_db
 def test_create_comments_invalid():
     post = create_post()
@@ -107,20 +109,20 @@ def test_create_comments_invalid():
                                 'author': comment.author, 'body': comment.body, 'post': comment.post})
     assert response.status_code == 200
 
-
+# DJANGO Check if sub-project of name projects exist
 def test_project_apps_dot_py():
     assert ProjectsConfig.name == 'projects'
 
-
+# DJANGO Check if sub-project of name blog exist
 def test_project_blogs_dot_py():
     assert BlogConfig.name == 'blog'
 
-
+# SELENIUM Check on frontend if admin page can be found
 def test_initial_admin_visit():
     driver.get('http://127.0.0.1:8000/admin')
     assert "Log in | Django site admin" in driver.title
 
-
+# SELENIUM CHeck the admin login works with valid username and password
 def test_login_valid():
     reset_driver()
     driver.get('http://127.0.0.1:8000/admin')
@@ -134,7 +136,7 @@ def test_login_valid():
     time.sleep(1)
     assert check_exists_by_xpath('//*[@id="user-tools"]') == True
 
-
+# SELENIUM Check if the cateogry can be created with invalid values.
 def test_create_category_invalid():
     driver.get('http://127.0.0.1:8000/admin')
     add_link = driver.find_element_by_xpath(
@@ -148,7 +150,7 @@ def test_create_category_invalid():
     assert (check_exists_by_xpath(
         '//*[@id="category_form"]/div/p') == True and "Please correct the error below." in driver.page_source)
 
-
+# SELENIUM Check if the cateogry can be created with valid values.
 def test_create_category_valid():
     driver.get('http://127.0.0.1:8000/admin')
     add_link = driver.find_element_by_xpath(
@@ -165,7 +167,7 @@ def test_create_category_valid():
     assert (check_exists_by_xpath(
         '//*[@id="container"]/ul/li') == True and "was added successfully." in driver.page_source)
 
-
+# SELENIUM Check if the category created can be viewed.
 def test_read_created_category():
     driver.get('http://127.0.0.1:8000/admin')
     category_link = driver.find_element_by_xpath(
@@ -178,7 +180,7 @@ def test_read_created_category():
     time.sleep(1)
     assert "Change category" in driver.page_source
 
-
+# SELENIUM Check if the category can be updated with valid parameters
 def test_update_created_category_valid():
     driver.get('http://127.0.0.1:8000/admin')
     category_link = driver.find_element_by_xpath(
@@ -199,7 +201,7 @@ def test_update_created_category_valid():
     assert(check_exists_by_xpath('//*[@id="container"]/ul/li') ==
            True and "was changed successfully." in driver.page_source)
 
-
+# SELENIUM Check if the category can be updated with invalid parameters
 def test_update_created_category_invalid():
     driver.get('http://127.0.0.1:8000/admin')
     category_link = driver.find_element_by_xpath(
@@ -220,7 +222,7 @@ def test_update_created_category_invalid():
     assert (check_exists_by_xpath(
         '//*[@id="category_form"]/div/p') == True and "Please correct the error below." in driver.page_source)
 
-
+# SELENIUM Check if the category can be deleted.
 def test_delete_created_category():
     driver.get('http://127.0.0.1:8000/admin')
     change_link = driver.find_element_by_xpath(
@@ -242,7 +244,7 @@ def test_delete_created_category():
     assert(check_exists_by_xpath('//*[@id="container"]/ul/li') ==
            True and "was deleted successfully." in driver.page_source)
 
-
+# SELENIUM Check if the post can be created wit invalid parameters
 def test_create_post_invalid():
     driver.get('http://127.0.0.1:8000/admin')
     add_link = driver.find_element_by_xpath(
@@ -256,7 +258,7 @@ def test_create_post_invalid():
     assert (check_exists_by_xpath(
         '//*[@id="post_form"]/div/p') == True and "Please correct the errors below." in driver.page_source)
 
-
+# SELENIUM Check if the post can be created wit valid parameters
 def test_create_post_valid():
     driver.get('http://127.0.0.1:8000/admin')
     add_link = driver.find_element_by_xpath(
@@ -278,7 +280,7 @@ def test_create_post_valid():
     assert (check_exists_by_xpath(
         '//*[@id="container"]/ul/li') == True and "was added successfully." in driver.page_source)
 
-
+# SELENIUM Check if the created post can be read
 def test_read_created_post():
     driver.get('http://127.0.0.1:8000/admin')
     post_link = driver.find_element_by_xpath(
@@ -291,7 +293,7 @@ def test_read_created_post():
     time.sleep(1)
     assert "Change post" in driver.page_source
 
-
+# SELENIUM Check if the created post can be updated with valid parameters
 def test_update_created_post_valid():
     driver.get('http://127.0.0.1:8000/admin')
     post_link = driver.find_element_by_xpath(
@@ -318,7 +320,7 @@ def test_update_created_post_valid():
     assert(check_exists_by_xpath('//*[@id="container"]/ul/li') ==
            True and "was changed successfully." in driver.page_source)
 
-
+# SELENIUM Check if the created post can be upadted invalid parameters
 def test_update_created_post_invalid():
     driver.get('http://127.0.0.1:8000/admin')
     post_link = driver.find_element_by_xpath(
@@ -342,7 +344,7 @@ def test_update_created_post_invalid():
     assert (check_exists_by_xpath(
         '//*[@id="post_form"]/div/p') == True and "Please correct the errors below." in driver.page_source)
 
-
+# SELENIUM Check if the created post can be deleted.
 def test_delete_created_post():
     driver.get('http://127.0.0.1:8000/admin')
     change_link = driver.find_element_by_xpath(
@@ -364,7 +366,7 @@ def test_delete_created_post():
     assert(check_exists_by_xpath('//*[@id="container"]/ul/li') ==
            True and "was deleted successfully." in driver.page_source)
 
-
+# SELENIUM Check if the user can be logged out properly after performing action.
 def test_logout():
     driver.get('http://127.0.0.1:8000/admin')
     link = driver.find_element_by_xpath('//*[@id="user-tools"]/a[3]')
@@ -373,7 +375,7 @@ def test_logout():
     assert ("Logged out | Django site admin" in driver.page_source and check_exists_by_xpath(
         '//*[@id="content"]/h1') == True)
 
-
+# SELENIUM Check if the user can be logged in with invalid parameters
 def test_login_invalid():
     reset_driver()
     driver.get('http://127.0.0.1:8000/admin')
@@ -387,16 +389,17 @@ def test_login_invalid():
     time.sleep(1)
     assert check_exists_by_xpath('/html/body/div/div[2]/p') == True
 
-
+# SELENIUM Check if the element cannot be found. 
 def test_cannot_find_element():
     assert check_exists_by_xpath('') == False
 
 
 # Common Functions
+# Resets the driver and allows for the login function to be used again.
 def reset_driver():
     driver.delete_all_cookies()
 
-
+# Check if an element exists by the xpath - Returns true if found, false if not.
 def check_exists_by_xpath(xpath):
     try:
         driver.find_element_by_xpath(xpath)
@@ -404,7 +407,7 @@ def check_exists_by_xpath(xpath):
         return False
     return True
 
-
+# Creates a project and save it.
 def create_project():
     project = Project(title='Project Coolio',
                       description='A super cool project',
@@ -414,7 +417,7 @@ def create_project():
     project.save()
     return project
 
-
+# Create a blog post and save it.
 def create_post():
     post = Post(title='title',
                 body='sample body',
@@ -423,20 +426,20 @@ def create_post():
     post.save()
     return post
 
-
+# Create a category and save it.
 def create_cat():
     cat = Category(name='Category')
     cat.save()
     return cat
 
-
+# Create a comment and save it.
 def create_comment():
     comment = Comment(author='Person',
                       body='This post rocks!',
                       created_on=datetime.datetime.now())
     return comment
 
-
+# Create a invalid comment and save it.
 def create_comment_invalid():
     comment = Comment(author='',
                       body='',
